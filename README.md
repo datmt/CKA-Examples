@@ -1,3 +1,6 @@
+
+# Managing cluster
+
 ## Task 1: Create a 3 nodes cluster
 
 ###  Requirements:
@@ -212,6 +215,8 @@ kubectl get nodes -o wide
 
 ![img.png](img.png)
 
+
+# Deployment, Daemonset, Statefulset
 
 ## Task 4: Create and scale a deployment
 
