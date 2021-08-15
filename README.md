@@ -395,7 +395,64 @@ the init container is named `busy-start`, you can get its log by using `-c busy-
 ## Task 7: Create statefulset
 TODO
 
+# Volumes
 
 ## Task 8: Create a volume and share between containers in a pod
 
 ###  Requirements
+- Create a pod with two busybox containers: busy1 and busy2
+- Create a volume where busy1 writes current date every 1 seconds and busy2 watch the file and print to stdout (using tail)
+
+### Answer
+For requirement like this, emptyDir volume is a good choice. 
+Create an yaml like this and name it `share-vol.yaml` for example:
+
+```yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: share-vol
+spec:
+  containers:
+  - image: busybox
+    name: busy1
+    command: ['/bin/sh', '-c']
+    args: ['while true; do date >> /share/date; sleep 1; done']
+    volumeMounts:
+    - mountPath: /share
+      name: share-volume
+
+  - image: busybox
+    name: busy2
+    volumeMounts:
+    - mountPath: /share
+      name: share-volume
+    command: ['/bin/sh', '-c']
+    args: ['tail -f /share/date']
+
+  volumes:
+  - name: share-volume
+    emptyDir: {}
+```
+
+Create the pod by `kubectl apply -f share-vol.yaml`
+
+Now, check the file `/share/date` in pod 1 using kubectl exec:
+
+```bash
+
+kubectl exec -it share-vol -c busy1 -- cat /share/date
+```
+
+You'll see the file is updated every 1 second:
+![img_10.png](img_10.png)
+
+Now, let's check the log in the container `busy2'
+
+```bash 
+kubectl logs share-vol -c busy2
+```
+![img_11.png](img_11.png)
+
+As you can see, container busy1 can write to `/share/date` and container busy2 can read from the same location.
