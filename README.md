@@ -332,3 +332,63 @@ Checking the details of the `nginx-rolling` deployment should show nginx image a
 ![img_7.png](img_7.png)
 
 
+# Task 6: Using init containers
+
+## Requirements:
+- Create a deployment name init-box using busybox as init container that sleep for 20 seconds.
+- After 20 seconds, that container writes "wake up" to stdout (which can be seen )
+- That deployment should also use nginx 1.16 as main container
+
+
+## Answer
+Create this yaml file named sleep.yaml or whatever name you like
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: init-box
+  name: init-box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: init-box
+  template:
+    metadata:
+      labels:
+        app: init-box
+    spec:
+      initContainers:
+        - image: busybox
+          name: busy-start
+          command: ['/bin/sh', '-c']
+          args: ["sleep 20; echo 'wake up'"]
+      containers:
+      - image: nginx:1.16
+        name: nginx
+        resources: {}
+status: {}
+```
+
+Now run:
+```yaml
+kubectl apply -f sleep.yaml
+
+```
+
+Get the pods:
+![img_8.png](img_8.png)
+
+After 20 seconds, you can see the log using:
+
+```bash
+kubectl logs init-box-6b7b74854d-jlj8s -c busy-start 
+
+```
+![img_9.png](img_9.png)
+
+As you can see, you can use `-c container_name` to get the log of a specific container. As in the yaml file above,
+the init container is named `busy-start`, you can get its log by using `-c busy-start`
+
+
