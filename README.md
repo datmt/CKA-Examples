@@ -456,3 +456,119 @@ kubectl logs share-vol -c busy2
 ![img_11.png](img_11.png)
 
 As you can see, container busy1 can write to `/share/date` and container busy2 can read from the same location.
+
+
+## Task 9: Create and use persistent volume
+
+### Requirement
+- Create a persistent volume that is used by two pods pod1 and pod2 
+- Both pods use busy box, one pod write the current date to a file and other pod read and print the content of the file to stdout
+
+### Answer 
+We need to create persistent volume and persistent volume claim. Since many pods (2) can read/write to the volume, the persistent volume and persistent volume claim's access mode could be:
+    - ReadWriteMany
+    - ReadWriteOnce and ReadOnlyMany
+
+Let's create the persistent volume and persistent volume claim first. Let's name the following file `pv-share.yaml`
+
+```yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: share-pv
+  labels:
+    app: share-pv
+spec:
+  capacity:
+    storage: 10Mi
+  accessModes:
+    - ReadWriteOnce
+    - ReadOnlyMany
+  hostPath:
+    path: "/tmp/share"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: share-pvc
+spec:
+  selector:
+    matchLabels:
+      app: share-pv
+  storageClassName: "" # specify this to avoid dynamic provisioning 
+  accessModes:
+    - ReadWriteOnce
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 10Mi
+
+```
+
+Now create pv and pvc:
+
+```bash
+kubectl apply -f pv-share.yaml 
+```
+
+The PV, PVC should be created and with status Bound
+
+![img_12.png](img_12.png)
+
+Let's create the two pods that read and write to that PV. Let's call the file name 'share-pv-pods.yaml'
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  volumes:
+    - name: share-pv-vol
+      persistentVolumeClaim:
+        claimName: share-pvc
+  containers:
+    - name: busybox 
+      image: busybox
+      command: ['/bin/sh', '-c']
+      args: ['while true; do date >> /tmp/share-pod-1/date; sleep 1; done']
+      volumeMounts:
+        - mountPath: "/tmp/share-pod-1"
+          name: share-pv-vol
+          
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod2
+spec:
+  volumes:
+    - name: share-pv-vol
+      persistentVolumeClaim:
+        claimName: share-pvc
+  containers:
+    - name: busybox
+      image: busybox
+      command: ['/bin/sh', '-c']
+      args: ['tail -f /tmp/share-pod-2/date']
+      volumeMounts:
+        - mountPath: "/tmp/share-pod-2"
+          name: share-pv-vol
+
+```
+
+Create the pods
+```bash
+
+kubectl apply -f share-pv-pods.yaml
+```
+
+![img_13.png](img_13.png)
+
+Let's log the pod2
+
+![img_14.png](img_14.png)
+
+You can see that it successfully reads the data written by pod1
