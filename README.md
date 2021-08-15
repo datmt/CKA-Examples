@@ -1,13 +1,13 @@
-# Task 1: Create a 3 nodes cluster
+## Task 1: Create a 3 nodes cluster
 
-## Requirements:
+###  Requirements:
 Create a cluster with 1 master and 2 worker nodes
 
 
-## Answer
+###  Answer
 
 Do step 1 to step 4 in all nodes(3)
-### Step 1: Disable swap
+#### Step 1: Disable swap
 To disable swap, simply remove the line with swap in /etc/fstab
 
 ```bash
@@ -18,7 +18,7 @@ Comment out the line with swap
 ![disable swap](https://datmt.com/wp-content/uploads/2021/06/image-12.png)
 
 
-### Step 2: Install docker run time
+#### Step 2: Install docker run time
 
 ```bash
  sudo apt-get update
@@ -41,7 +41,7 @@ echo \
 
 ```
 
-### Step 3: Configure cgroup
+#### Step 3: Configure cgroup
 Switch to root and run
 
 ```bash
@@ -63,7 +63,7 @@ systemctl restart docker
 
 ```
 
-### Step 4: Install kubeadm, kubelet, kubectl
+#### Step 4: Install kubeadm, kubelet, kubectl
 
 ```bash
 sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
@@ -78,7 +78,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 Now, that's all the common commands you need to run on all nodes. Next comes the command you only run on the master node:
 
-### Step 5: start master node
+#### Step 5: start master node
 
 ```bash
 kubeadm init
@@ -104,7 +104,7 @@ kubectl cluster-info
 
 and wait until the status of the master node is `Ready`
 
-### Step 6: Join the cluster on worker nodes
+#### Step 6: Join the cluster on worker nodes
 
 Then, switch to the worker node and run the join command (the one you got after `kubeadm init`)
 
@@ -125,13 +125,13 @@ Congratulations! You have successfully setup a kubernetes cluster
 
 
 
-# Task 2 : Using curl to explore the API
+## Task 2 : Using curl to explore the API
 
-## Requirements
+###  Requirements
 Use `curl` instead of `kubectl` to get information about the cluster (pods...)
 
 
-## Answer
+###  Answer
 `kubectl` uses `curl` to access the Kubernetes API.
 
 
@@ -152,24 +152,24 @@ Now you can access the Kubernetes API using `curl`
 Some examples accessing resources using curl
 
 ```bash 
-# Get pods in all namespaces
+## Get pods in all namespaces
 curl http://localhost:9900/api/v1/pods
 
 
-# Get pods in the default namespace
+## Get pods in the default namespace
 
 curl http://localhost:9900/api/v1/namepsaces/default/pods
 ```
 
 
 
-# Task 3: Create a deployment that run ONE nginx pod in all nodes of the cluser
+## Task 3: Create a deployment that run ONE nginx pod in all nodes of the cluser
 
-## Requirements
+###  Requirements
 Create a deployment that run one nginx pod in every node of the cluster, including the master node
 
 
-## Answer
+###  Answer
 Daemonset is perfect to meet the requriements
 Daemonset makes sure the pod run one instance in all nodes of the cluster.
 Tolerations are needed to make sure pod runs on master node too.
@@ -213,14 +213,14 @@ kubectl get nodes -o wide
 ![img.png](img.png)
 
 
-# Task 4: Create and scale a deployment
+## Task 4: Create and scale a deployment
 
-## Requirement
+###  Requirement
 Create a deployment using nginx image with 1 replica.
 Then, scale the deployment to 2 replicas
 
 
-## Answer
+###  Answer
 To quickly create a deployment, use `kubectl create`
 
 ```bash 
@@ -239,15 +239,15 @@ kubectl scale deployment nginx-deployment --replicas=2
 The scale command can also be used with replicaset, statefulset, replicationcontroller(deprecated)
 
 
-# Task 5: Perform a rolling update/rollback of a deployment
+## Task 5: Perform a rolling update/rollback of a deployment
 
-## Requirements:
+###  Requirements:
 - Create a deployment named `nginx-rolling` with 3 pods using nginx:1.14 image
 - Update the deployment to nginx:1.16
 - Rollback the deployment to 1.14 using rollout history
 - During the update, max unavailable is 2
 
-## Answer
+###  Answer
 Create deployment using `kubectl create` using dry-run (so we can quickly create the deployment) and 
 add the additional info about the rolling update.
 
@@ -332,15 +332,15 @@ Checking the details of the `nginx-rolling` deployment should show nginx image a
 ![img_7.png](img_7.png)
 
 
-# Task 6: Using init containers
+## Task 6: Using init containers
 
-## Requirements:
+###  Requirements:
 - Create a deployment name init-box using busybox as init container that sleep for 20 seconds.
 - After 20 seconds, that container writes "wake up" to stdout (which can be seen )
 - That deployment should also use nginx 1.16 as main container
 
 
-## Answer
+###  Answer
 Create this yaml file named sleep.yaml or whatever name you like
 ```yaml
 apiVersion: apps/v1
@@ -392,3 +392,10 @@ As you can see, you can use `-c container_name` to get the log of a specific con
 the init container is named `busy-start`, you can get its log by using `-c busy-start`
 
 
+## Task 7: Create statefulset
+TODO
+
+
+## Task 8: Create a volume and share between containers in a pod
+
+###  Requirements
