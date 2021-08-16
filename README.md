@@ -1,7 +1,7 @@
 
-# Managing cluster
+# 1. Managing cluster
 
-## Task 1: Create a 3 nodes cluster
+## Task 1.1: Create a 3 nodes cluster
 
 ###  Requirements:
 Create a cluster with 1 master and 2 worker nodes
@@ -128,7 +128,7 @@ Congratulations! You have successfully setup a kubernetes cluster
 
 
 
-## Task 2 : Using curl to explore the API
+## Task 1.2 : Using curl to explore the API
 
 ###  Requirements
 Use `curl` instead of `kubectl` to get information about the cluster (pods...)
@@ -165,8 +165,9 @@ curl http://localhost:9900/api/v1/namepsaces/default/pods
 ```
 
 
+# 2. Deployment, Daemonset, Statefulset
 
-## Task 3: Create a deployment that run ONE nginx pod in all nodes of the cluser
+## Task 2.1: Create a deployment that run ONE nginx pod in all nodes of the cluser
 
 ###  Requirements
 Create a deployment that run one nginx pod in every node of the cluster, including the master node
@@ -216,9 +217,7 @@ kubectl get nodes -o wide
 ![img.png](img.png)
 
 
-# Deployment, Daemonset, Statefulset
-
-## Task 4: Create and scale a deployment
+## Task 2.2: Create and scale a deployment
 
 ###  Requirement
 Create a deployment using nginx image with 1 replica.
@@ -244,7 +243,7 @@ kubectl scale deployment nginx-deployment --replicas=2
 The scale command can also be used with replicaset, statefulset, replicationcontroller(deprecated)
 
 
-## Task 5: Perform a rolling update/rollback of a deployment
+## Task 2.3: Perform a rolling update/rollback of a deployment
 
 ###  Requirements:
 - Create a deployment named `nginx-rolling` with 3 pods using nginx:1.14 image
@@ -337,7 +336,7 @@ Checking the details of the `nginx-rolling` deployment should show nginx image a
 ![img_7.png](img_7.png)
 
 
-## Task 6: Using init containers
+## Task 2.4: Using init containers
 
 ###  Requirements:
 - Create a deployment name init-box using busybox as init container that sleep for 20 seconds.
@@ -397,12 +396,12 @@ As you can see, you can use `-c container_name` to get the log of a specific con
 the init container is named `busy-start`, you can get its log by using `-c busy-start`
 
 
-## Task 7: Create statefulset
+## Task 2.5: Create statefulset
 TODO
 
-# Volumes
+# 3. Volumes
 
-## Task 8: Create a volume and share between containers in a pod
+## Task 3.1: Create a volume and share between containers in a pod
 
 ###  Requirements
 - Create a pod with two busybox containers: busy1 and busy2
@@ -463,7 +462,7 @@ kubectl logs share-vol -c busy2
 As you can see, container busy1 can write to `/share/date` and container busy2 can read from the same location.
 
 
-## Task 9: Create and use persistent volume
+## Task 3.2: Create and use persistent volume
 
 ### Requirement
 - Create a persistent volume that is used by two pods pod1 and pod2 
@@ -577,3 +576,97 @@ Let's log the pod2
 ![img_14.png](img_14.png)
 
 You can see that it successfully reads the data written by pod1
+
+
+# 4. Secrets & ConfigMap
+
+## Task 4.1: Use configmap to create a custom nginx config file
+
+### Requirements
+- Create a ConfigMap that serves a custom nginx config file
+- The default index file is other.html and its content is 'Hello from the other!'
+
+### Answer
+
+For this task, we actually need to create TWO ConfigMap, one for the nginx config file, the other for other.html file.
+
+`nginx.conf`
+```text
+server {
+    listen 80;
+    server_name localhost;
+    location / {
+        root /usr/share/nginx/html;
+        index other.html;
+    
+    }
+}
+```
+
+`other.html`
+```text
+Hello from the other!
+```
+
+Let's create two ConfigMap for these two files:
+`nginx-cm`
+```bash
+
+kubectl create cm nginx-conf-cm --from-file=nginx.conf
+```
+
+`other-cm`
+```bash
+
+kubectl create cm other-cm --from-file=other.html
+```
+
+Let's verify the two cm were created:
+![img_15.png](img_15.png)
+
+It's time to create the pod that uses these two ConfigMaps. Let's create a file called `pod-cm.yaml` with content as follow:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-cm-pod
+  
+spec:
+  containers:
+  - name: nginx-cm
+    image: nginx
+    volumeMounts:
+    - name: config
+      mountPath: /etc/nginx/conf.d
+    - name: other-vol
+      mountPath: /usr/share/nginx/html
+  
+  volumes:
+  - name: config
+    configMap:
+      name: nginx-conf-cm
+      items:
+      - key: nginx.conf
+        path: default.conf
+
+  - name: other-vol
+    configMap:
+      name: other-cm
+      items:
+      - key: other.html
+        path: other.html
+```
+
+Now, if you try to get the content of the file at `/usr/share/nginx/html/other.html`, the expected content should be shown:
+```bash 
+kubectl  exec -it nginx-cm-pod -- cat /usr/share/nginx/html/other.html
+```
+
+![img_16.png](img_16.png)
+
+And, to make sure the config works, let's curl the localhost inside the container and you should get the expected content:
+```text
+ kubectl  exec -it nginx-cm-pod -- curl http://localhost
+```
+![img_17.png](img_17.png)
