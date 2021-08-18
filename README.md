@@ -670,3 +670,123 @@ And, to make sure the config works, let's curl the localhost inside the containe
  kubectl  exec -it nginx-cm-pod -- curl http://localhost
 ```
 ![img_17.png](img_17.png)
+
+
+## Task 4.2: Create a ConfigMap an use the values as environment variables
+
+### Requirements
+- Create a configmap with two pairs of keys and values
+- Use the two keys as environment variables in an nginx pod
+
+### Answer
+
+First, create the configmap
+```bash
+kubectl create cm env-cm --from-literal=key1=value1 --from-literal=key2=value2
+
+
+```
+
+Next we are going to assign `value1` and `value2` to two environment variables in an nginx pod.
+Let's create a yaml file like this and call it `nginx-cm.yaml`:
+
+```yaml
+kind: Pod
+apiVersion: v1
+
+metadata:
+  name: nginx-cm
+spec:
+  containers:
+    - name: nginx-cm
+      image: nginx
+      env:
+        - name: ENV_KEY_1
+          valueFrom:
+            configMapKeyRef:
+              key: key1
+              name: env-cm
+        - name: ENV_KEY_2
+          valueFrom:
+            configMapKeyRef:
+              key: key2
+              name: env-cm
+```
+
+Let's create the pod:
+
+```bash
+kubectl apply -f nginx-cm.yaml
+
+```
+
+Now, if you run the command `env` inside the pod, you should see the two environment variables has been set:
+
+```bash
+kubectl exec -it nginx-cm-pod -- env | grep "ENV"
+
+```
+![img_18.png](img_18.png)
+
+## Task 4.3: Use all values of a configmap as environment variables
+### Requirements
+- Instead of specifying single variables like task 4.2, let's create a config map with 3 values (from yaml file)
+- Then use all key/value pairs as environment variables
+
+### Answer
+
+First, let's create the configmap with three random values. Let's call the file `some-cm.yaml`
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: some-cm
+data:
+  first_env: "10000"
+  second_env: "20000"
+  third_env: "something else"
+```
+
+Let's create the configmap by running:
+```bash
+kubectl apply -f some-cm.yaml
+```
+
+Now, create a pod to use the configmap. Create the following file and name it `some-pod.yaml`
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: some-pod
+  
+spec:
+  containers:
+    - name: some-pod
+      image: nginx
+      envFrom:
+        - configMapRef:
+            name: some-cm
+
+```
+
+Let's create the pod:
+
+```bash
+kubectl apply -f some-pod.yaml
+```
+
+Now, check the environment variables inside that pod:
+
+```bash
+kubectl exec -it some-pod -- env
+
+```
+
+Sure enough, you got the environment variables there:
+![img_19.png](img_19.png)
+
+## Task 4.3: Create a secret and use it as MariaDB password
+
+### Requirements
