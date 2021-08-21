@@ -790,3 +790,91 @@ Sure enough, you got the environment variables there:
 ## Task 4.3: Create a secret and use it as MariaDB password
 
 ### Requirements
+- Create a secret 
+- Use it as mariadb password
+
+### Answer
+Create a password for mariadb using secret
+
+```bash
+kubectl create secret generic mariadb-secret --from-literal=pw=abc123
+```
+
+This should create a secret named `mariadb-secret`
+
+If you run:
+```bash
+
+kubectl get secret mariadb-secret -o yaml
+```
+
+You should get the following output:
+```yaml
+apiVersion: v1
+data:
+  pw: YWJjMTIz
+kind: Secret
+metadata:
+  creationTimestamp: "2021-08-21T05:31:39Z"
+  name: mariadb-secret
+  namespace: default
+  resourceVersion: "17672707"
+  selfLink: /api/v1/namespaces/default/secrets/mariadb-secret
+  uid: e7fc5f82-50d0-4843-a512-96b113f0eb24
+type: Opaque
+
+```
+
+Notice the data field. It contains the key and values of the secret, of course, it's base64 encoded. 
+
+Let's use that secret as password for a mariadb pod. Create the following file and name it `maria-pod.yaml`
+
+```yaml
+kind: Pod
+apiVersion: v1
+metadata:
+  name: maria-secrets
+spec:
+  containers:
+    - name: maria-secets
+      image: mariadb
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: pw
+              name: mariadb-secret
+
+```
+
+You may wonder why the environment name is `MYSQL_ROOT_PASSWORD`. It's specified here in mariadb docker page: https://hub.docker.com/_/mariadb
+
+Let's create the pod
+```bash
+kubectl apply -f maria-pod.yaml 
+
+```
+
+Make sure the pod is running. If you run this:
+```bash
+kubectl get pods 
+```
+
+```text
+NAME            READY   STATUS    RESTARTS   AGE
+maria-secrets   1/1     Running   0          43s
+
+```
+
+Let's go to the pod and try to login with root and the password `abc123`
+
+```bash
+kubectl exec -it maria-secrets -- /bin/bash
+
+mysql -u root -p'abc123'
+
+```
+
+You should get this output:
+
+![img_20.png](img_20.png)
