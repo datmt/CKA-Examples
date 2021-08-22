@@ -878,3 +878,45 @@ mysql -u root -p'abc123'
 You should get this output:
 
 ![img_20.png](img_20.png)
+
+
+# 5. Resources management
+
+## Task 5.1: Create a pod specifying CPU and Memory requests/limits
+
+### Requirements
+- Create a pod running nginx with the following CPU and RAM specs:
+  - requests: 10Mi RAM, 100m (millicpu)
+  - limits: 30Mi RAM, 200m (millicpu)
+
+### Answer
+
+The specs for memory/cpu limits/requests are defined in the spec section of a pod definition as follow:
+![img_21.png](img_21.png)
+
+Create a definition file called `nginx-limit.yaml` with the following content:
+```yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-limit
+spec:
+  containers:
+  - name: nginx-limit
+    image: nginx
+    resources:
+      requests:
+        memory: "10Mi"
+        cpu: "100m"
+      limits:
+        memory: "30Mi"
+        cpu: "200m"
+```
+Now create the pod:
+
+```bash
+kubectl apply -f nginx-limit.yaml
+
+```
+
