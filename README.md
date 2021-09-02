@@ -214,7 +214,7 @@ Check if the pods are up and available at all nodes:
 kubectl get nodes -o wide
 ```
 
-![img.png](img.png)
+![img.png](images/img.png)
 
 
 ## Task 2.2: Create and scale a deployment
@@ -230,7 +230,7 @@ To quickly create a deployment, use `kubectl create`
 ```bash 
 kubectl create deploy nginx-deployment --image=nginx --replicas=1
 ```
-![img_1.png](img_1.png)
+![img_1.png](images/img_1.png)
 
 Now scale the deployment to 2 replicas:
 
@@ -238,7 +238,7 @@ Now scale the deployment to 2 replicas:
 
 kubectl scale deployment nginx-deployment --replicas=2 
 ```
-![img_2.png](img_2.png)
+![img_2.png](images/img_2.png)
 
 The scale command can also be used with replicaset, statefulset, replicationcontroller(deprecated)
 
@@ -304,7 +304,7 @@ change nginx:1.14 to nginx:1.16 the run `kubectl apply -f nginx-rolling.yaml` ag
 kubectl apply -f nginx-rolling.yaml
 ```
 
-![img_3.png](img_3.png)
+![img_3.png](images/img_3.png)
 
 Now, let's rollback to the previous deployment
 First, get the rollout history:
@@ -312,7 +312,7 @@ First, get the rollout history:
 kubectl rollout history deploy nginx-rolling
 ```
 
-![img_4.png](img_4.png)
+![img_4.png](images/img_4.png)
 
 You can check the details of the revisions to make sure the version of the image is correct:
 
@@ -320,7 +320,7 @@ You can check the details of the revisions to make sure the version of the image
 kubectl rollout history deployment nginx-rolling --revision=1
 
 ```
-![img_5.png](img_5.png)
+![img_5.png](images/img_5.png)
 
 It seems we need to roll back to revision 1
 
@@ -329,11 +329,11 @@ It seems we need to roll back to revision 1
 kubectl rollout undo deployment nginx-rolling --to-revision=1
 ```
 
-![img_6.png](img_6.png)
+![img_6.png](images/img_6.png)
 
 Checking the details of the `nginx-rolling` deployment should show nginx image at 1.14
 
-![img_7.png](img_7.png)
+![img_7.png](images/img_7.png)
 
 
 ## Task 2.4: Using init containers
@@ -382,7 +382,7 @@ kubectl apply -f sleep.yaml
 ```
 
 Get the pods:
-![img_8.png](img_8.png)
+![img_8.png](images/img_8.png)
 
 After 20 seconds, you can see the log using:
 
@@ -390,7 +390,7 @@ After 20 seconds, you can see the log using:
 kubectl logs init-box-6b7b74854d-jlj8s -c busy-start 
 
 ```
-![img_9.png](img_9.png)
+![img_9.png](images/img_9.png)
 
 As you can see, you can use `-c container_name` to get the log of a specific container. As in the yaml file above,
 the init container is named `busy-start`, you can get its log by using `-c busy-start`
@@ -450,14 +450,14 @@ kubectl exec -it share-vol -c busy1 -- cat /share/date
 ```
 
 You'll see the file is updated every 1 second:
-![img_10.png](img_10.png)
+![img_10.png](images/img_10.png)
 
 Now, let's check the log in the container `busy2'
 
 ```bash 
 kubectl logs share-vol -c busy2
 ```
-![img_11.png](img_11.png)
+![img_11.png](images/img_11.png)
 
 As you can see, container busy1 can write to `/share/date` and container busy2 can read from the same location.
 
@@ -518,7 +518,7 @@ kubectl apply -f pv-share.yaml
 
 The PV, PVC should be created and with status Bound
 
-![img_12.png](img_12.png)
+![img_12.png](images/img_12.png)
 
 Let's create the two pods that read and write to that PV. Let's call the file name 'share-pv-pods.yaml'
 
@@ -569,11 +569,11 @@ Create the pods
 kubectl apply -f share-pv-pods.yaml
 ```
 
-![img_13.png](img_13.png)
+![img_13.png](images/img_13.png)
 
 Let's log the pod2
 
-![img_14.png](img_14.png)
+![img_14.png](images/img_14.png)
 
 You can see that it successfully reads the data written by pod1
 
@@ -622,7 +622,7 @@ kubectl create cm other-cm --from-file=other.html
 ```
 
 Let's verify the two cm were created:
-![img_15.png](img_15.png)
+![img_15.png](images/img_15.png)
 
 It's time to create the pod that uses these two ConfigMaps. Let's create a file called `pod-cm.yaml` with content as follow:
 
@@ -663,13 +663,13 @@ Now, if you try to get the content of the file at `/usr/share/nginx/html/other.h
 kubectl  exec -it nginx-cm-pod -- cat /usr/share/nginx/html/other.html
 ```
 
-![img_16.png](img_16.png)
+![img_16.png](images/img_16.png)
 
 And, to make sure the config works, let's curl the localhost inside the container and you should get the expected content:
 ```text
  kubectl  exec -it nginx-cm-pod -- curl http://localhost
 ```
-![img_17.png](img_17.png)
+![img_17.png](images/img_17.png)
 
 
 ## Task 4.2: Create a ConfigMap an use the values as environment variables
@@ -726,7 +726,7 @@ Now, if you run the command `env` inside the pod, you should see the two environ
 kubectl exec -it nginx-cm-pod -- env | grep "ENV"
 
 ```
-![img_18.png](img_18.png)
+![img_18.png](images/img_18.png)
 
 ## Task 4.3: Use all values of a configmap as environment variables
 ### Requirements
@@ -785,7 +785,7 @@ kubectl exec -it some-pod -- env
 ```
 
 Sure enough, you got the environment variables there:
-![img_19.png](img_19.png)
+![img_19.png](images/img_19.png)
 
 ## Task 4.3: Create a secret and use it as MariaDB password
 
@@ -877,7 +877,7 @@ mysql -u root -p'abc123'
 
 You should get this output:
 
-![img_20.png](img_20.png)
+![img_20.png](images/img_20.png)
 
 
 # 5. Resources management
@@ -892,7 +892,7 @@ You should get this output:
 ### Answer
 
 The specs for memory/cpu limits/requests are defined in the spec section of a pod definition as follow:
-![img_21.png](img_21.png)
+![img_21.png](images/img_21.png)
 
 Create a definition file called `nginx-limit.yaml` with the following content:
 ```yaml
@@ -920,3 +920,6 @@ kubectl apply -f nginx-limit.yaml
 
 ```
 
+# 6. Affinity
+
+## Task 6.1: 
