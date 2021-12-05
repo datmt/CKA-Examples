@@ -1,4 +1,10 @@
 
+# 0. About me
+
+Hi, I'm Dat. I've taken the CKA exam September this year (2021) and passed. These are the practices I did and recorded so I can remember them better. 
+Hope it is useful to you.
+
+For more useful resources, please check out my site [datmt.com](https://datmt.com/).
 # 1. Managing cluster
 
 ## Task 1.1: Create a 3 nodes cluster
